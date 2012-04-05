@@ -1,0 +1,17 @@
+----charles_lxa5_oo.py----
+1. finish converting lxa over to class
+2. integrate with progress bar
+3. integrate with data view
+4. cache stuff
+
+---charles_firststabatUI.py-----
+1. build progress bar for corpus loading
+2. display of data view once corpus processed
+3. about
+4. figure out what goes in data tabs
+
+
+Extras
+1. output to gexf
+2. gexf integration 
+3. saving state in general
