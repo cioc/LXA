@@ -422,6 +422,20 @@ class lxaJob(QtCore.QThread):
 				self.outfileSigTransformsname = outfileSigTransformsname
 				self.outfileSigTransforms = outfileSigTransforms
 				self.StemFileExistsFlag	= StemFileExistsFlag
+				
+				self.filename = self.language + "_"  + str(self.size) + "Kwords_" + self.side + "_extendedsigs"
+				self.outfilename = decorateFilenameWithIteration (self.filename, self.outfolder, ".txt")
+ 
+
+				if self.g_encoding == "utf8":
+						self.outfile = codecs.open(self.outfilename, encoding =  "utf-8", mode = 'w',)
+						print "yes utf8"
+				else:
+						self.outfile = open(self.outfilename,mode='w') 
+				#self.outfile= open (self.outfilename,"w")
+
+				self.outfilename = self.language + "_" + str(self.size) + "Kwords_" + self.side + "sigtransforms" 
+				self.outfileSigTransformsname = decorateFilenameWithIteration(self.outfilename, self.outfolder, ".txt")
 		
 		#WE NEED FILE TYPE DETECTION (CORPUS VERSUS WORD COUNTS...)	
 		def run(self):
@@ -434,10 +448,10 @@ class lxaJob(QtCore.QThread):
 				self.progress_event.emit("opening corpus...", 0)
 				if self.g_encoding == "utf8":
 						self.infile = codecs.open(self.infilename, encoding = 'utf-8')
-						self.outfile = codecs.open(self.outfilename, encoding =  "utf-8", mode = 'w',)
+						#self.outfile = codecs.open(self.outfilename, 1encoding =  "utf-8", mode = 'w',)
 				else:
 						self.infile = open(self.infilename) 
-						self.outfile = open(self.outfilename,mode='w')
+						#self.outfile = open(self.outfilename,mode='w')
 						 
 				self.filelines= self.infile.readlines()
 				self.WordCounts={}

@@ -21,8 +21,70 @@ MinimumNumberofSigUses = 10
 	# WordToSig is a Map. its keys are words.       Its values are *lists* of signatures.
 	# StemCounts is a map. Its keys are words. 	Its values are corpus counts of stems.
 
-
-
+def decorateFilenameWithIteration (filename, outfolder, extension ):
+ 	
+	# Check that logfilename does NOT contain a (.
+ 	filenameLength = len(filename)
+	filenames = os.listdir(outfolder)	 
+	suffixes = list()	 
+	for thisfilename in filenames:			 	
+		pieces = thisfilename.partition("(") 
+		if thisfilename[0:filenameLength] == filename:
+			remainder = thisfilename[ len(filename): ] 		#chop off the left-side of the thisfile's name, the part that is filename			 
+			if thisfilename[ -1 * len(extension): ] == extension:
+				remainder = remainder[:-1 * len(extension) ]	#chop off the extension				 
+				if len(remainder) > 0 and remainder[0] == "(" and remainder[-1] == ")":
+					stringFileNumber = remainder[1:-1]			 
+					suffixes.append(int(stringFileNumber))					 
+	if len(suffixes) > 0:		 
+		maxvalue = 0
+		for item in suffixes:
+			if item > maxvalue:
+				maxvalue = item
+		filename = outfolder + filename + "(" + str(maxvalue + 1)+ ")" + extension
+	else:
+		filename = outfolder +filename + "(0).txt"
+ 	return filename
+# ---------------------------------------------------------#
+def findSignatureInformationContent (signatures, signature, bitsPerLetter):
+	stemSetPhonoInformation =0
+	stemSetOrderingInformation = 0
+	affixPhonoInformation = 0
+	affixOrderingInformation = 0
+	stemset = signatures[signature]
+	for stem in stemset:
+		stemlength = len(stem)
+		stemSetPhonoInformation += bitsPerLetter * stemlength
+		stemSetOrderingInformation += math.log( stemlength * (stemlength -1)/ 2,2)  
+	affixList = signature.split(".")
+	for affix in affixList:
+		affixlength = len(affix)
+		affixPhonoInformation += bitsPerLetter * len(affix)
+		affixOrderingInformation += math.log ( affixlength * (affixlength -1)/2,2)
+	phonoInformation = int(stemSetPhonoInformation + affixPhonoInformation)
+	orderingInformation = int(stemSetOrderingInformation + affixOrderingInformation)
+	return (phonoInformation, orderingInformation)
+def makeWordListFromSignature (signature, stemset):
+	wordlist = list()
+	affixlist = signature.split('.')
+	for stem in stemset:
+		for affix in affixlist:
+			if affix == "NULL":
+				word = stem
+			else:
+				word = stem + affix
+		wordlist.append (word)
+	return wordlist
+		
+	
+def findWordListInformationContent (wordlist, bitsPerLetter):
+	phonoInformation = 0
+	orderingInformation = 0
+	for word in wordlist:
+		wordlength = len(word)
+		phonoInformation += bitsPerLetter * wordlength
+		orderingInformation += wordlength*(wordlength-1) / 2
+	return (phonoInformation, orderingInformation)
 
 # ---------------------------------------------------------#
 def makesortedstring(string):
@@ -809,6 +871,16 @@ def printSignatures(Signatures, WordToSig, StemCounts, outfile, encoding, FindSu
 			if n == numberofstemsperline:
 				n= 0
 				print >>outfile 
+		bitsPerLetter = 5
+		wordlist = makeWordListFromSignature (sig, Signatures[sig])
+		(a,b) = findWordListInformationContent(wordlist, bitsPerLetter)
+		(c,d) = findSignatureInformationContent(Signatures, sig, bitsPerLetter)
+		formatstring = '%35s %10d + %10d = %10d'
+		formatstringheader = '%35s %10s    %10s  %10s'
+		print >>outfile, formatstringheader % ("","Phono", "Ordering", "Total")
+		print >>outfile, formatstring % ("Information in words if unanalyzed:", a,b, a+b)
+		print >>outfile, formatstring % ("Information in words as analyzed:", c, d,  c+d ) 	
+		
 
 		# print the average count of the Top 5 most frequent stems
 		print >>outfile, "\n-------------------------"
