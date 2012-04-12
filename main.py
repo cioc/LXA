@@ -10,6 +10,7 @@ from PySide.QtGui import *
 from UI.renderClasses import *
 from UI.lxa5 import *
 from UI.render_classes_specific import *
+from UI.copora_right_click_menu import *
 from Core.lxa_process import *
 
 #globals
@@ -41,6 +42,9 @@ class DataWidget(QDockWidget):
 		
 		def render_obj(self, obj):
 				self.dataView.render_obj(obj)
+		
+		def render_clear(self):
+				self.dataView.render_clear()
 				
 		def resizeEvent(self, e):
 				self.dataView.move(5,25)
@@ -66,6 +70,8 @@ class CorporaWidget(QDockWidget):
 				self.setWidget(self.coporaListView)
 				self.coporaListView.itemClicked.connect(self.itemClicked)
 				self.setAcceptDrops(True)
+				self.coporaListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+				self.coporaListView.customContextMenuRequested.connect(self.right_click)
 		def dragEnterEvent(self, e):
 				if e.mimeData().hasFormat('text/plain'):
 						e.accept()
@@ -85,6 +91,21 @@ class CorporaWidget(QDockWidget):
 				g_copora_list.append(nlxa)
 				self.coporaListView.addItem(dn)
 				self.coporaListView.currentItemChanged.connect(self.itemSelected)
+		
+		def right_click(self,pos):
+				self.coporaListView.rmenu = corpus_right_menu(self.coporaListView.currentRow(), self)
+				self.coporaListView.rmenu.exec_(self.coporaListView.mapToGlobal(QPoint(pos.x(),pos.y())))
+		
+		def remove_item(self, index):
+				self.coporaListView.rmenu = None
+				self.coporaListView.takeItem(index)
+				global g_corpus_selected 
+				g_corpus_selected = None
+				global g_copora_list
+				g_copora_list.pop(index)
+				self.parent().dataWidget.render_clear()
+				
+	
 		
 		def itemClicked(self, item):
 				index = self.coporaListView.indexFromItem(item).row()

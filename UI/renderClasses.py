@@ -91,11 +91,16 @@ class render_table(QTableWidget):
 		#object must be or inherit from render_base
 		def render_obj(self, obj):
 				self.focus_obj = obj
-				for i in range(0, self.rowCount()):
-						self.removeCellWidget(i,1)
-				self.clearContents()
+				self.render_clear()
 				self.parent().setWindowTitle("Data View - " + obj.display_name())
 				obj.render(self)
+		
+		def render_clear(self):
+				for i in range(0, self.rowCount()):
+						self.removeRow(1)
+				self.clearContents()
+				self.parent().setWindowTitle("Data View - Nothing right now.")
+				
 		
 		def cellChangedEvent(self, row, col):
 				it = self.item(row,col) 
